@@ -1,33 +1,60 @@
-# Chat
+# ChainProof: AI-agent-ready receipt evidence workbench
 
-The minimal agent-native starter app — a clean, ChatGPT-style shell with chat at
-the center, durable threads, standard app navigation, auth, live sync, and
-actions. Start here when you want a real browser app to build on without
-committing to a domain template.
+An original, functional crypto/DeFi safety tool built with the official **Agent-Native** framework, featuring a responsive operator UI and a single action shared across the app, CLI, and agent.
 
-**Live app: [chat.agent-native.com](https://chat.agent-native.com?utm_source=github&utm_medium=referral&utm_content=chat-readme)**
+ChainProof helps engineers, marketplace operators, and microbusiness owners screen Base mainnet USDC deposit claims **before** including them in financial records. Incorrect tokens, chain mismatches, duplicate event IDs, internal payments, missing event evidence and finality problems should never be counted as customer revenue.
 
-Chat is the basic agent-native app starting point. It gives you the app-agent
-loop wired end to end and one example action, so you can add your own UI, data,
-and actions on top.
+**Security boundary:** This version is fully read-only and local by design. It never asks for a wallet seed, wallet connection, OAuth token, payment signature, user principal, gas fees or API key. Imported transactions are *not* verified by any blockchain node. Neither an imported "finalized" flag nor a structurally plausible transfer can establish actual receipt. Only an independent finalized ERC-20 Transfer event check and owner-wide ledger reconciliation can do that.
 
-## Features
+## What works
 
-- ChatGPT-style shell with a threads list and durable chat history.
-- Auth, live sync, and application state wired out of the box.
-- The action surface the agent and UI share, plus one example action to copy.
-- A minimal, brandable base for any domain app.
+- Operator screen at **/chainproof** with JSON evidence editor and expected Base payee input.
+- Shared Agent-Native action **audit-receipts** for the UI, agent, CLI and MCP.
+- Strict Base chain **8453**, native Circle USDC contract and owner-address checks.
+- Duplicate key **(chain ID, transaction hash, event log index)**. A transaction may contain several ERC-20 transfers, so deduplication is at the event level.
+- Positive six-decimal atomic amounts with exact integer arithmetic, without floating-point rounding.
+- Excludes self-transfers, wrong-chain records, incorrect token contracts and entries without sufficient attestations.
+- Exportable machine-readable JSON audit report.
+- Six **entirely fictional** fixture events with expected outcome: 1 structurally plausible **unverified** candidate, 4 held, 1 duplicate.
+- Ten deterministic Vitest assertions, Agent-Native typechecking, security/configuration doctor, real browser smoke run on local development, and command-line action execution.
 
-## Develop locally
+## Reproduce locally
 
-Scaffold your own copy and run it:
+Requires Node.js 22.22+, pnpm 10.29+, and a modern browser.
 
-```bash
-npx --yes @agent-native/core@latest create my-app --standalone --template chat
-cd my-app
-corepack enable
-pnpm install
-pnpm dev
-```
+    pnpm install
+    NODE_ENV=development pnpm exec agent-native dev
 
-Full docs: [agent-native.com/docs/template-chat](https://agent-native.com/docs/template-chat?utm_source=github&utm_medium=referral&utm_content=chat-readme).
+Use the startup URL printed by the framework (usually 5005 or the next free port). Sign in only with the **Continue as local dev** option on the local development browser. Open /chainproof and click **Audit evidence** on the fictional six-row fixture. The app should display 1 candidate, 4 holds, 1 duplicate, and **0.000000 verified income**.
+
+Run quality checks:
+
+    pnpm exec vitest run lib/receipt-audit.test.ts
+    pnpm typecheck
+    pnpm agent-native:doctor
+
+For a first-party command-line integration proof:
+
+    pnpm action audit-receipts --help
+
+Inputs are defined by the Zod schema in actions/audit-receipts.ts. The shared deterministic implementation is in lib/receipt-audit.ts and the transparent fictional sample in lib/demo-evidence.ts.
+
+## How Agent-Native is integrated
+
+ChainProof is built on Agent-Native 0.220.0 as a standalone application with its normal authenticated route shell and chat. The core algorithm is **not** implemented twice in separate backend/frontend functions: the UI uses Agent-Native useActionMutation("audit-receipts"), the agent advertises the same action as a tool, and the CLI uses the same action and schema. Navigation and Agent-Native AGENTS.md instructions make the domain discoverable in conversations. The action does not make hidden LLM calls.
+
+## Limits and verification requirements
+
+A result labeled REVIEW CANDIDATE indicates **an unverified user-supplied statement**, not a genuine sale, asset balance, taxable profit, or on-chain payment. Even the "confirmedRevenueUSDC" field remains exactly 0.000000 in this tool.
+
+Before anyone books revenue, they must obtain actual chain data and verify: the chain ID; the native Circle USDC token address; a successful transaction; the ERC-20 Transfer event and log index; the recipient; the correct token decimals; a finalized block; the sender's independence from the beneficiary; duplicate checks across all accounts/VMs; platform fees, refunds, and other costs.
+
+No real customer's records, wallets or payments are bundled. This repo does **not** include a revenue ledger or claim that the author's prior wallet transactions were generated by this app.
+
+## Deployment
+
+Development uses local PGlite and a local-development sign-in. **It is not a public production deployment.** A real online deployment still requires a persistent PostgreSQL database URL, a fresh strong BETTER_AUTH_SECRET configured in the host secrets manager, proper public HTTPS URL and authentication review. Never commit those values into source control, use AUTH_DISABLED in production, or upload private billing/client events without a data-protection plan.
+
+This is a working proof-of-concept and an original Builder.io Agent-Native hackathon preparation. It has **not yet been entered**, won, or received a hackathon payment. Final application and a public Clips demo would be subject to real legal age and author identity validation, official rules and deadlines.
+
+Author: PaperPilot Tools, original one-owner AI-assisted open-source research. License: MIT for authored code; upstream Agent-Native components retain their own licenses.

@@ -26,6 +26,7 @@ import {
   IconMessages,
   IconPin,
   IconSearch,
+  IconShieldCheck,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -525,6 +526,18 @@ export function Sidebar({
         )}
       >
         <HomeNavLink collapsed={collapsed} />
+        <div className={collapsed ? "px-0" : "px-2"}>
+          <Link to="/chainproof"
+            aria-label="ChainProof evidence workbench"
+            className={cn(
+              "flex items-center rounded-lg text-sm font-medium transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
+              collapsed ? "size-10 justify-center" : "h-10 w-full gap-3 px-3",
+            )}
+          >
+            <IconShieldCheck className="size-4 shrink-0" strokeWidth={1.8}/>
+            <span className={collapsed ? "sr-only" : "truncate"}>ChainProof</span>
+          </Link>
+        </div>
         <ChatThreadsSection collapsed={collapsed} />
       </nav>
 

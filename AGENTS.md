@@ -31,3 +31,16 @@ Use `adding-a-feature` for functional parity and `frontend-design` for a user-fa
 Before building common workspace or agent UI, read `agent-native-toolkit`; for supported customization, read `customizing-agent-native`.
 
 - Guarded verification: run `pnpm agent-native:doctor`; fix findings before done.
+
+
+## ChainProof: Base USDC evidence preflight
+- Domain surface: /chainproof. The agent and React screen share action audit-receipts.
+- No paid deployment, RPC call, signature, transaction, principal movement or wallet secrets.
+- Invariants: only full Base 8453 native Circle USDC contract, exact payee address, positive atomic amount, valid tx/log index and different sender can become an UNVERIFIED candidate. Deduplicate by (chain, tx hash, log index). No imported flag ever confirms cash. All example data is fictional.
+- Input format: expectedPayee full EVM address, records array <=100 with chainId, tokenContract, from, to, txHash, logIndex, amountAtomic, source, finalityAttested and erc20TransferAttested.
+- Navigation: view=chainproof maps to /chainproof.
+- Action table:
+|Action|Purpose|
+|---|---|
+|audit-receipts|Read-only deterministic preflight for duplicates, wrong chain/token, missing finality, self transfers and nominal candidate transfers. Never books profit.|
+- Agent answers: use structured findings, call out proof gaps, never describe the fictional fixture as real income.
